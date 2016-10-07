@@ -42,6 +42,7 @@ public class RadiationEvent {
      * @return Time of Reading
      */
     public Date getTimeOfReading() {
+        timeOfReading.toString();
         return timeOfReading;
     }
 
