@@ -167,6 +167,8 @@ public class CEPHandler {
     RadiationWindowListener rwListener;
     RadiationBatchListener rbListener;
     
+    EPAdministrator epAdm;
+    
     EPStatement last5RadiationStatement;
     EPStatement batch5RadiationStatement;
     
@@ -196,6 +198,13 @@ public class CEPHandler {
         System.out.println("Changed to window");
     }
     
+    public void noFilters(){
+        //EPLStatement and Listener registration
+        last5RadiationStatement = epAdm.createEPL(EPLQueries.getLast5Radiation());
+        batch5RadiationStatement = epAdm.createEPL(EPLQueries.getBatch5Radiation());
+        last5RadiationStatement.addListener(rwListener);
+    }
+    
     public void initService(){
         //Start GUI
         logScreen.setVisible(true);
@@ -208,11 +217,8 @@ public class CEPHandler {
         config.addEventType("TemperatureEvent", TemperatureEvent.class.getName());
         
         EPServiceProvider epService = EPServiceProviderManager.getDefaultProvider(config);
-        EPAdministrator epAdm = epService.getEPAdministrator();
-        //EPLStatement and Listener registration
-        last5RadiationStatement = epAdm.createEPL(EPLQueries.getLast5Radiation());
-        batch5RadiationStatement = epAdm.createEPL(EPLQueries.getBatch5Radiation());
-        last5RadiationStatement.addListener(rwListener);
+        epAdm = epService.getEPAdministrator();
+        noFilters();
         
         // Event Generation
         EPRuntime cepRT = epService.getEPRuntime();
