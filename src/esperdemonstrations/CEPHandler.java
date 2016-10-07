@@ -90,7 +90,7 @@ class RadiationWindowListener implements UpdateListener{
             System.out.println("Number of olds"+oldData.length);
         
         
-        //Store Events in Arrays
+        //Store Events in LinkedLists
         for(int i=0; i<newData.length; i++){
             if(newData[i]==null){
                 System.out.println("We got a null");
@@ -181,29 +181,82 @@ public class CEPHandler {
     }
     
     /**
-     * Get the Events by Batch
+     * Get the Events by Window
      */
-    public void getByBatch(){
-        last5RadiationStatement.removeAllListeners();
-        batch5RadiationStatement.addListener(rbListener);
-        System.out.println("Changed to batch");
+    public void getByWindowNoFilter(){
+        //EPLStatement and Listener registration
+        last5RadiationStatement = epAdm.createEPL(EPLQueries.getLast5Radiation());
+        
+        //Deactivate the batch listener
+        if(batch5RadiationStatement != null)
+            batch5RadiationStatement.removeAllListeners();
+        
+        //Activate the window listener
+        last5RadiationStatement.addListener(rwListener);
+    }
+    
+    public void getByWindowFilter(String filter){
+        //EPLStatement and Listener registration
+        last5RadiationStatement = epAdm.createEPL(EPLQueries.getLast5RadiationFilter(filter));
+        
+        //Deactivate the batch listener
+        if(batch5RadiationStatement != null)
+            batch5RadiationStatement.removeAllListeners();
+        
+        //Activate the window listener
+        last5RadiationStatement.addListener(rwListener);
+    }
+    
+    public void getByWindowWhere(String where){
+        //EPLStatement and Listener registration
+        last5RadiationStatement = epAdm.createEPL(EPLQueries.getLast5RadiationWhere(where));
+        
+        //Deactivate the batch listener
+        if(batch5RadiationStatement != null)
+            batch5RadiationStatement.removeAllListeners();
+        
+        //Activate the window listener
+        last5RadiationStatement.addListener(rwListener);
     }
     
     /**
-     * Get the Events by Window
+     * Get the Events by Batch
      */
-    public void getByWindow(){
-        batch5RadiationStatement.removeAllListeners();
-        last5RadiationStatement.addListener(rwListener);
-        System.out.println("Changed to window");
+    public void getByBatchNoFilter(){
+        //EPLStatement and Listener registration
+        batch5RadiationStatement = epAdm.createEPL(EPLQueries.getBatch5Radiation());
+        
+        //Deactivate the batch listener
+        if(last5RadiationStatement != null)
+            last5RadiationStatement.removeAllListeners();
+        
+        //Activate the window listener
+        batch5RadiationStatement.addListener(rwListener);    
     }
     
-    public void noFilters(){
+    public void getByBatchFilter(String filter){
         //EPLStatement and Listener registration
-        last5RadiationStatement = epAdm.createEPL(EPLQueries.getLast5Radiation());
-        batch5RadiationStatement = epAdm.createEPL(EPLQueries.getBatch5Radiation());
-        last5RadiationStatement.addListener(rwListener);
+        batch5RadiationStatement = epAdm.createEPL(EPLQueries.getBatch5RadiationFilter(filter));
+        
+        //Deactivate the batch listener
+        if(last5RadiationStatement != null)
+            last5RadiationStatement.removeAllListeners();
+        
+        //Activate the window listener
+        batch5RadiationStatement.addListener(rwListener);    
     }
+    
+    public void getByBatchWhere(String where){
+        //EPLStatement and Listener registration
+        batch5RadiationStatement = epAdm.createEPL(EPLQueries.getBatch5RadiationWhere(where));
+        
+        //Deactivate the batch listener
+        if(last5RadiationStatement != null)
+            last5RadiationStatement.removeAllListeners();
+        
+        //Activate the window listener
+        batch5RadiationStatement.addListener(rwListener);    
+    }    
     
     public void initService(){
         //Start GUI
@@ -218,7 +271,7 @@ public class CEPHandler {
         
         EPServiceProvider epService = EPServiceProviderManager.getDefaultProvider(config);
         epAdm = epService.getEPAdministrator();
-        noFilters();
+        getByWindowNoFilter();
         
         // Event Generation
         EPRuntime cepRT = epService.getEPRuntime();

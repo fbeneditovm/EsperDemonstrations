@@ -16,6 +16,7 @@ public class EventLogScreen extends javax.swing.JFrame {
     CEPHandler handler;
     LinkedList<String> inEvents;
     LinkedList<String> rmEvents;
+    boolean filterEvents;
     
     /**
      * Creates new form EventLogScreen
@@ -24,6 +25,7 @@ public class EventLogScreen extends javax.swing.JFrame {
         this.handler = handler;
         inEvents = new LinkedList<>();
         rmEvents = new LinkedList<>();
+        filterEvents = false;
         initComponents();
     }
     
@@ -31,6 +33,7 @@ public class EventLogScreen extends javax.swing.JFrame {
         this.handler = null;
         inEvents = new LinkedList<>();
         rmEvents = new LinkedList<>();
+        filterEvents = false;
         initComponents();
     }
     
@@ -67,6 +70,43 @@ public class EventLogScreen extends javax.swing.JFrame {
         removeList.setListData(data2);
     }
     
+    private void clearEvents(){
+        inEvents = new LinkedList<String>();
+        rmEvents = new LinkedList<String>();
+        updateLog();
+        
+        //Get the events by batch
+        if (showbyBatchToggle.isSelected()){
+            //Add a filter or where clause
+            if(filterEvents){
+                String condition = conditionField.getText();
+                //If filter is selected in the combo box
+                if(comboBox.getSelectedIndex()==0)
+                    handler.getByBatchFilter(condition);
+                else
+                    handler.getByBatchWhere(condition);
+            }                
+            else{
+                handler.getByBatchNoFilter();
+            }
+        }
+        //Get the events by window
+        else{
+            //Add a filter or where clause
+            if(filterEvents){
+                String condition = conditionField.getText();
+                //If filter is selected in the combo box
+                if(comboBox.getSelectedIndex()==0)
+                    handler.getByWindowFilter(condition);
+                else
+                    handler.getByWindowWhere(condition);
+            }
+            else{
+                handler.getByWindowNoFilter();
+            }
+        }
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -85,8 +125,8 @@ public class EventLogScreen extends javax.swing.JFrame {
         jScrollPane2 = new javax.swing.JScrollPane();
         removeList = new javax.swing.JList<>();
         jLabel4 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox<>();
-        jTextField1 = new javax.swing.JTextField();
+        comboBox = new javax.swing.JComboBox<>();
+        conditionField = new javax.swing.JTextField();
         btAddFilter = new javax.swing.JButton();
         btRemoveFilter = new javax.swing.JButton();
 
@@ -115,13 +155,28 @@ public class EventLogScreen extends javax.swing.JFrame {
 
         jLabel4.setText("Add a Filter or where clause:");
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Filter", "Where Clause" }));
+        comboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Filter", "Where Clause" }));
 
-        jTextField1.setText("Type filter or where clause");
+        conditionField.setText("Type filter or where clause");
+        conditionField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                conditionFieldFocusGained(evt);
+            }
+        });
 
         btAddFilter.setText("Add");
+        btAddFilter.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btAddFilterActionPerformed(evt);
+            }
+        });
 
         btRemoveFilter.setText("Remove");
+        btRemoveFilter.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btRemoveFilterActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -133,7 +188,7 @@ public class EventLogScreen extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel4)
                         .addGap(18, 18, 18)
-                        .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(comboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
                         .addGroup(layout.createSequentialGroup()
@@ -144,7 +199,7 @@ public class EventLogScreen extends javax.swing.JFrame {
                         .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jScrollPane2))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 275, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(conditionField, javax.swing.GroupLayout.PREFERRED_SIZE, 275, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btAddFilter)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -161,10 +216,10 @@ public class EventLogScreen extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(comboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(conditionField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btAddFilter)
                     .addComponent(btRemoveFilter))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -182,15 +237,22 @@ public class EventLogScreen extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void showbyBatchToggleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showbyBatchToggleActionPerformed
-        inEvents = new LinkedList<String>();
-        rmEvents = new LinkedList<String>();
-        updateLog();
-        
-        if (showbyBatchToggle.isSelected())
-            handler.getByBatch();
-        else
-            handler.getByWindow();
+        clearEvents();
     }//GEN-LAST:event_showbyBatchToggleActionPerformed
+
+    private void btAddFilterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btAddFilterActionPerformed
+        filterEvents = true;
+        clearEvents();
+    }//GEN-LAST:event_btAddFilterActionPerformed
+
+    private void btRemoveFilterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRemoveFilterActionPerformed
+        filterEvents = false;
+        clearEvents();
+    }//GEN-LAST:event_btRemoveFilterActionPerformed
+
+    private void conditionFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_conditionFieldFocusGained
+        conditionField.selectAll();
+    }//GEN-LAST:event_conditionFieldFocusGained
     public boolean isShowbyBatch(){
         return showbyBatchToggle.isSelected();
     }
@@ -232,15 +294,15 @@ public class EventLogScreen extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btAddFilter;
     private javax.swing.JButton btRemoveFilter;
+    private javax.swing.JComboBox<String> comboBox;
+    private javax.swing.JTextField conditionField;
     private javax.swing.JList<String> insertList;
-    private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTextField jTextField1;
     private javax.swing.JList<String> removeList;
     private javax.swing.JToggleButton showbyBatchToggle;
     // End of variables declaration//GEN-END:variables
