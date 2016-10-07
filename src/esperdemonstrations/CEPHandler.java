@@ -83,7 +83,12 @@ class RadiationWindowListener implements UpdateListener{
         rmEvents = new LinkedList<>();
         
         System.out.println("Number of news"+newData.length);
-        System.out.println("Number of olds"+oldData.length);
+        
+        if(oldData == null)
+            System.out.println("No old Events");
+        else
+            System.out.println("Number of olds"+oldData.length);
+        
         
         //Store Events in Arrays
         for(int i=0; i<newData.length; i++){
@@ -95,14 +100,15 @@ class RadiationWindowListener implements UpdateListener{
                           "- at "+(Date)newData[i].get("timeOfReading"));
             System.out.println("Event received: "+ newData[i].getUnderlying());
         }
-        for(int i=0; i<oldData.length; i++){
-            rmEvents.add("Radiation: "+new DecimalFormat("#.###").format((double)oldData[i].get("radiation"))+" uSv "+
-                          "- at "+(Date)oldData[i].get("timeOfReading"));
+        if(oldData != null){
+            for(int i=0; i<oldData.length; i++){
+                rmEvents.add("Radiation: "+new DecimalFormat("#.###").format((double)oldData[i].get("radiation"))+" uSv "+
+                             "- at "+(Date)oldData[i].get("timeOfReading"));
+            }
         }
         
         //Send Events to GUI
         screen.newEvents(inEvents, rmEvents);
-        System.out.println("We got here");
     }
 }
 
@@ -123,18 +129,30 @@ class RadiationBatchListener implements UpdateListener{
     public void update(EventBean[] newData, EventBean[] oldData) {
         inEvents = new LinkedList<>();
         rmEvents = new LinkedList<>();
+        
         System.out.println("Number of news"+newData.length);
-        System.out.println("Number of olds"+oldData.length);
+        
+        if(oldData == null)
+            System.out.println("No old Events");
+        else
+            System.out.println("Number of olds"+oldData.length);
+        
         
         //Store Events in Arrays
         for(int i=0; i<newData.length; i++){
+            if(newData[i]==null){
+                System.out.println("We got a null");
+                break;
+            }
             inEvents.add("Radiation: "+new DecimalFormat("#.###").format((double)newData[i].get("radiation"))+" uSv "+
                           "- at "+(Date)newData[i].get("timeOfReading"));
             System.out.println("Event received: "+ newData[i].getUnderlying());
         }
-        for(int i=0; i<oldData.length; i++){
-            rmEvents.add("Radiation: "+new DecimalFormat("#.###").format((double)oldData[i].get("radiation"))+" uSv "+
-                          "- at "+(Date)oldData[i].get("timeOfReading"));
+        if(oldData != null){
+            for(int i=0; i<oldData.length; i++){
+                rmEvents.add("Radiation: "+new DecimalFormat("#.###").format((double)oldData[i].get("radiation"))+" uSv "+
+                             "- at "+(Date)oldData[i].get("timeOfReading"));
+            }
         }
         
         //Send Events to GUI
