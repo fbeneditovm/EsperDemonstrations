@@ -35,7 +35,7 @@ class Generator extends Thread{
      * Generate a new RadiationEvent and sends it
      */
     public void generateRandomRadiation(){
-        double radiation = (double) generator.nextInt(6) + generator.nextDouble();
+        double radiation = (double) generator.nextInt(6) +generator.nextDouble();
         RadiationEvent rdEvent = new RadiationEvent(radiation, new Date());
         //System.out.println("Sending radiation:" + rdEvent);
         cepRT.sendEvent(rdEvent);
@@ -55,9 +55,14 @@ class Generator extends Thread{
     public void run(){
         while(true){
             generateRandomTemperature();
+            try {
+                Thread.sleep(750);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Generator.class.getName()).log(Level.SEVERE, null, ex);
+            }
             generateRandomRadiation();
             try {
-                Thread.sleep(1000);
+                Thread.sleep(750);
             } catch (InterruptedException ex) {
                 Logger.getLogger(Generator.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -319,56 +324,7 @@ class TemperatureBatchListener implements UpdateListener{
     }
 }
 
-class TemperatureCriticalListener implements UpdateListener{
-    WarningScreen screen;
-    LinkedList<String> inEvents;
-    
-    public void setScreen(WarningScreen screen){
-        this.screen = screen;
-    }
-    
-    @Override
-    public void update(EventBean[] newData, EventBean[] oldData) {
-        inEvents = new LinkedList<>();
-        
-        System.out.println("Number of news TpWarning "+newData.length);
-        
-        inEvents.add("CRITICAL: Temperature is out of control: "+(int)newData[0].get("temperature")+
-                          ", "+(int)newData[1].get("temperature")+", "+(int)newData[2].get("temperature")+ 
-                          ", "+(int)newData[3].get("temperature")+"º C "+
-                          "- at "+(Date)newData[0].get("timeOfReading"));
-        System.out.println("Event received: "+ newData[0].getUnderlying());
-        
-        
-        //Send Events to GUI
-        screen.newCritical(inEvents);
-    }
-}
 
-class TemperatureWarningListener implements UpdateListener{
-    WarningScreen screen;
-    LinkedList<String> inEvents;
-    
-    public void setScreen(WarningScreen screen){
-        this.screen = screen;
-    }
-    
-    @Override
-    public void update(EventBean[] newData, EventBean[] oldData) {
-        inEvents = new LinkedList<>();
-        
-        System.out.println("Number of news TpWarning "+newData.length);
-        
-        inEvents.add("WARNING: Temperature Spike: "+(int)newData[0].get("temperature")+
-                          " -> "+(int)newData[1].get("temperature")+" º C "+
-                          "- at "+(Date)newData[0].get("timeOfReading"));
-        System.out.println("Event received: "+ newData[0].getUnderlying());
-        
-        
-        //Send Events to GUI
-        screen.newWarning(inEvents);
-    }
-}
 
 class TemperatureRadiationCriticalListener implements UpdateListener{
     WarningScreen screen;
@@ -382,11 +338,11 @@ class TemperatureRadiationCriticalListener implements UpdateListener{
     public void update(EventBean[] newData, EventBean[] oldData) {
         inEvents = new LinkedList<>();
         
-        System.out.println("Number of news TpWarning "+newData.length);
+        System.out.println("Number of news TpRdCritical "+newData.length);
         
-        inEvents.add("CRITICAL: VERY High Temperature: "+(int)newData[0].get("temp")+" º C "+
-                          " followed by VERY High Radiation: "+new DecimalFormat("#.###").format((double)newData[0].get("rad"))+" uSv "+
-                          "- at "+new Date((long)newData[0].get("timeOfReading"));
+        inEvents.add("CRITICAL: VERY High Temp: "+(int)newData[0].get("temp")+" º C "+
+                          " followed by VERY High Rad: "+new DecimalFormat("#.###").format((double)newData[0].get("rad"))+" uSv "+
+                          "- at "+new Date((long)newData[0].get("timeMillisec")));
         System.out.println("Event received: "+ newData[0].getUnderlying());
         
         
@@ -407,11 +363,11 @@ class TemperatureRadiationWarningListener implements UpdateListener{
     public void update(EventBean[] newData, EventBean[] oldData) {
         inEvents = new LinkedList<>();
         
-        System.out.println("Number of news TpWarning "+newData.length);
+        System.out.println("Number of news TpRdWarning "+newData.length);
         
-        inEvents.add("WARNING: High Temperature: "+(int)newData[0].get("temp")+" º C "+
-                          " followed by High Radiation: "+new DecimalFormat("#.###").format((double)newData[0].get("rad"))+" uSv "+
-                          "- at "+new Date((long)newData[0].get("timeOfReading"));
+        inEvents.add("WARNING: High Temp: "+(int)newData[0].get("temp")+"º C "+
+                          " followed by High Rad: "+new DecimalFormat("#.###").format((double)newData[0].get("rad"))+" uSv "+
+                          "- at "+new Date((long)newData[0].get("timeMillisec")));
         System.out.println("Event received: "+ newData[0].getUnderlying());
         
         
@@ -428,8 +384,14 @@ public class CEPHandler {
     RadiationWindowListener rwListener;
     RadiationBatchListener rbListener;
     
+    TemperatureWindowListener twListener;
+    TemperatureBatchListener tbListener;
+    
     EPStatement last5RadiationStatement;
     EPStatement batch5RadiationStatement;
+    
+    EPStatement last5TemperatureStatement;
+    EPStatement batch5TemperatureStatement;
     
     public CEPHandler(){
         logScreen = new EventLogScreen(this);
@@ -438,6 +400,10 @@ public class CEPHandler {
         rwListener.setScreen(logScreen);
         rbListener = new RadiationBatchListener();
         rbListener.setScreen(logScreen);
+        twListener = new TemperatureWindowListener();
+        twListener.setScreen(logScreen);
+        tbListener = new TemperatureBatchListener();
+        tbListener.setScreen(logScreen);
     }
     
     /**
@@ -445,7 +411,10 @@ public class CEPHandler {
      */
     public void getByBatch(){
         last5RadiationStatement.removeAllListeners();
+        last5TemperatureStatement.removeAllListeners();
+        
         batch5RadiationStatement.addListener(rbListener);
+        batch5TemperatureStatement.addListener(tbListener);
         System.out.println("Changed to batch");
     }
     
@@ -454,13 +423,17 @@ public class CEPHandler {
      */
     public void getByWindow(){
         batch5RadiationStatement.removeAllListeners();
+        batch5TemperatureStatement.removeAllListeners();
+        
         last5RadiationStatement.addListener(rwListener);
+        last5TemperatureStatement.addListener(twListener);
         System.out.println("Changed to window");
     }
     
     public void initService(){
         //Start GUI
         logScreen.setVisible(true);
+        warningScreen.setVisible(true);
         
         //Configuration
         Configuration config = new Configuration();
@@ -471,10 +444,38 @@ public class CEPHandler {
         
         EPServiceProvider epService = EPServiceProviderManager.getDefaultProvider(config);
         EPAdministrator epAdm = epService.getEPAdministrator();
+        
         //EPLStatement and Listener registration
         last5RadiationStatement = epAdm.createEPL(EPLQueries.getLast5Radiation());
         batch5RadiationStatement = epAdm.createEPL(EPLQueries.getBatch5Radiation());
         last5RadiationStatement.addListener(rwListener);
+        
+        last5TemperatureStatement = epAdm.createEPL(EPLQueries.getLast5Temperature());
+        batch5TemperatureStatement = epAdm.createEPL(EPLQueries.getBatch5Temperature());
+        last5TemperatureStatement.addListener(twListener);
+        
+        EPStatement ctx20secAfterTemp = epAdm.createEPL(EPLQueries.createCtx20secAfterTemperature());
+        
+        
+        EPStatement criticalRadiationStatement = epAdm.createEPL(EPLQueries.criticalRadiation());
+        RadiationCriticalListener rcl = new RadiationCriticalListener();
+        criticalRadiationStatement.addListener(rcl);
+        rcl.setScreen(warningScreen);
+        
+        EPStatement warningRadiationStatement = epAdm.createEPL(EPLQueries.warningRadiation());
+        RadiationWarningListener rwl = new RadiationWarningListener();
+        warningRadiationStatement.addListener(rwl);
+        rwl.setScreen(warningScreen);
+        
+        EPStatement criticalTemperatureRadiationStatement = epAdm.createEPL(EPLQueries.criticalTemperatureRadiation());
+        TemperatureRadiationCriticalListener trcl = new TemperatureRadiationCriticalListener();
+        criticalTemperatureRadiationStatement.addListener(trcl);
+        trcl.setScreen(warningScreen);
+        
+        EPStatement warningTemperatureRadiationStatement = epAdm.createEPL(EPLQueries.warningTemperatureRadiation());
+        TemperatureRadiationWarningListener trwl = new TemperatureRadiationWarningListener();
+        warningTemperatureRadiationStatement.addListener(trwl);
+        trwl.setScreen(warningScreen);
         
         // Event Generation
         EPRuntime cepRT = epService.getEPRuntime();
