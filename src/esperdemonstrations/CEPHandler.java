@@ -6,6 +6,7 @@
 package esperdemonstrations;
 
 import GUI.EventLogScreen;
+import GUI.WarningScreen;
 import com.espertech.esper.client.*;
 import java.text.DecimalFormat;
 import java.util.Date;
@@ -160,9 +161,43 @@ class RadiationBatchListener implements UpdateListener{
     }
 }
 
+class RadiationWarningListener implements UpdateListener{
+    
+    WarningScreen screen;
+    LinkedList<String> inEvents;
+    LinkedList<String> rmEvents;
+    
+    public void setScreen(WarningScreen screen){
+        this.screen = screen;
+    }
+    
+    @Override
+    public void update(EventBean[] newData, EventBean[] oldData) {
+        inEvents = new LinkedList<>();
+        
+        System.out.println("Number of news RdWarning "+newData.length);
+        
+        //Store Events in Arrays
+        for(int i=0; i<newData.length; i++){
+            if(newData[i]==null){
+                System.out.println("We got a null");
+                break;
+            }
+            inEvents.add("WARNING: Radiation: "+new DecimalFormat("#.###").format((double)newData[i].get("radiation"))+" uSv "+
+                          "- at "+(Date)newData[i].get("timeOfReading"));
+            System.out.println("Event received: "+ newData[i].getUnderlying());
+        }
+        
+        
+        //Send Events to GUI
+        screen.newWarning(inEvents);
+    }
+}
+
 public class CEPHandler {
     
     EventLogScreen logScreen;
+    WarningScreen warningScreen
     
     RadiationWindowListener rwListener;
     RadiationBatchListener rbListener;
@@ -172,6 +207,7 @@ public class CEPHandler {
     
     public CEPHandler(){
         logScreen = new EventLogScreen(this);
+        warningScreen = new WarningScreen();
         rwListener = new RadiationWindowListener();
         rwListener.setScreen(logScreen);
         rbListener = new RadiationBatchListener();
