@@ -161,11 +161,41 @@ class RadiationBatchListener implements UpdateListener{
     }
 }
 
+class RadiationCriticalListener implements UpdateListener{
+    
+    WarningScreen screen;
+    LinkedList<String> inEvents;
+    
+    public void setScreen(WarningScreen screen){
+        this.screen = screen;
+    }
+    
+    @Override
+    public void update(EventBean[] newData, EventBean[] oldData) {
+        inEvents = new LinkedList<>();
+        
+        System.out.println("Number of news RdCritical "+newData.length);
+        
+        //Store Events in Arrays
+        for(int i=0; i<newData.length; i++){
+            if(newData[i]==null){
+                System.out.println("We got a null");
+                break;
+            }
+            inEvents.add("CRITICAL: Average Radiation: "+new DecimalFormat("#.###").format((double)newData[i].get("avgRd"))+" uSv "+
+                          "- at "+(Date)newData[i].get("timeOfReading"));
+            System.out.println("Event received: "+ newData[i].getUnderlying());
+        }
+        
+        //Send Events to GUI
+        screen.newCritical(inEvents);
+    }
+}
+
 class RadiationWarningListener implements UpdateListener{
     
     WarningScreen screen;
     LinkedList<String> inEvents;
-    LinkedList<String> rmEvents;
     
     public void setScreen(WarningScreen screen){
         this.screen = screen;
@@ -183,10 +213,206 @@ class RadiationWarningListener implements UpdateListener{
                 System.out.println("We got a null");
                 break;
             }
-            inEvents.add("WARNING: Radiation: "+new DecimalFormat("#.###").format((double)newData[i].get("radiation"))+" uSv "+
+            inEvents.add("WARNING: Radiation levels are too high: "+new DecimalFormat("#.###").format((double)newData[i].get("radiation"))+" uSv "+
                           "- at "+(Date)newData[i].get("timeOfReading"));
             System.out.println("Event received: "+ newData[i].getUnderlying());
         }
+        
+        //Send Events to GUI
+        screen.newWarning(inEvents);
+    }
+}
+
+/**
+ * Update Listener that gets the last 5 TemperatureEvents
+ */
+class TemperatureWindowListener implements UpdateListener{
+    
+    EventLogScreen screen;
+    LinkedList<String> inEvents;
+    LinkedList<String> rmEvents;
+    
+    public void setScreen(EventLogScreen screen){
+        this.screen = screen;
+    }
+    
+    @Override
+    public void update(EventBean[] newData, EventBean[] oldData) {
+        inEvents = new LinkedList<>();
+        rmEvents = new LinkedList<>();
+        
+        System.out.println("Number of news"+newData.length);
+        
+        if(oldData == null)
+            System.out.println("No old Events");
+        else
+            System.out.println("Number of olds"+oldData.length);
+        
+        
+        //Store Events in Arrays
+        for(int i=0; i<newData.length; i++){
+            if(newData[i]==null){
+                System.out.println("We got a null");
+                break;
+            }
+            inEvents.add("Temperature: "+(int)newData[i].get("temperature")+"º C "+
+                          "- at "+(Date)newData[i].get("timeOfReading"));
+            System.out.println("Event received: "+ newData[i].getUnderlying());
+        }
+        if(oldData != null){
+            for(int i=0; i<oldData.length; i++){
+                rmEvents.add("Temperature: "+(int)oldData[i].get("temperature")+"º C "+
+                             "- at "+(Date)oldData[i].get("timeOfReading"));
+            }
+        }
+        
+        //Send Events to GUI
+        screen.newEvents(inEvents, rmEvents);
+    }
+}
+
+/**
+ * Update Listener that gets the TemperatureEvents 5 by 5
+ */
+class TemperatureBatchListener implements UpdateListener{
+    
+    EventLogScreen screen;
+    LinkedList<String> inEvents;
+    LinkedList<String> rmEvents;
+    
+    public void setScreen(EventLogScreen screen){
+        this.screen = screen;
+    }
+    
+    @Override
+    public void update(EventBean[] newData, EventBean[] oldData) {
+        inEvents = new LinkedList<>();
+        rmEvents = new LinkedList<>();
+        
+        System.out.println("Number of news"+newData.length);
+        
+        if(oldData == null)
+            System.out.println("No old Events");
+        else
+            System.out.println("Number of olds"+oldData.length);
+        
+        
+        //Store Events in Arrays
+        for(int i=0; i<newData.length; i++){
+            if(newData[i]==null){
+                System.out.println("We got a null");
+                break;
+            }
+            inEvents.add("Temperature: "+(int)newData[i].get("temperature")+"º C "+
+                          "- at "+(Date)newData[i].get("timeOfReading"));
+            System.out.println("Event received: "+ newData[i].getUnderlying());
+        }
+        if(oldData != null){
+            for(int i=0; i<oldData.length; i++){
+                rmEvents.add("Temperature: "+(int)oldData[i].get("temperature")+"º C "+
+                             "- at "+(Date)oldData[i].get("timeOfReading"));
+            }
+        }
+        
+        //Send Events to GUI
+        screen.newEvents(inEvents, rmEvents);
+    }
+}
+
+class TemperatureCriticalListener implements UpdateListener{
+    WarningScreen screen;
+    LinkedList<String> inEvents;
+    
+    public void setScreen(WarningScreen screen){
+        this.screen = screen;
+    }
+    
+    @Override
+    public void update(EventBean[] newData, EventBean[] oldData) {
+        inEvents = new LinkedList<>();
+        
+        System.out.println("Number of news TpWarning "+newData.length);
+        
+        inEvents.add("CRITICAL: Temperature is out of control: "+(int)newData[0].get("temperature")+
+                          ", "+(int)newData[1].get("temperature")+", "+(int)newData[2].get("temperature")+ 
+                          ", "+(int)newData[3].get("temperature")+"º C "+
+                          "- at "+(Date)newData[0].get("timeOfReading"));
+        System.out.println("Event received: "+ newData[0].getUnderlying());
+        
+        
+        //Send Events to GUI
+        screen.newCritical(inEvents);
+    }
+}
+
+class TemperatureWarningListener implements UpdateListener{
+    WarningScreen screen;
+    LinkedList<String> inEvents;
+    
+    public void setScreen(WarningScreen screen){
+        this.screen = screen;
+    }
+    
+    @Override
+    public void update(EventBean[] newData, EventBean[] oldData) {
+        inEvents = new LinkedList<>();
+        
+        System.out.println("Number of news TpWarning "+newData.length);
+        
+        inEvents.add("WARNING: Temperature Spike: "+(int)newData[0].get("temperature")+
+                          " -> "+(int)newData[1].get("temperature")+" º C "+
+                          "- at "+(Date)newData[0].get("timeOfReading"));
+        System.out.println("Event received: "+ newData[0].getUnderlying());
+        
+        
+        //Send Events to GUI
+        screen.newWarning(inEvents);
+    }
+}
+
+class TemperatureRadiationCriticalListener implements UpdateListener{
+    WarningScreen screen;
+    LinkedList<String> inEvents;
+    
+    public void setScreen(WarningScreen screen){
+        this.screen = screen;
+    }
+    
+    @Override
+    public void update(EventBean[] newData, EventBean[] oldData) {
+        inEvents = new LinkedList<>();
+        
+        System.out.println("Number of news TpWarning "+newData.length);
+        
+        inEvents.add("CRITICAL: VERY High Temperature: "+(int)newData[0].get("temp")+" º C "+
+                          " followed by VERY High Radiation: "+new DecimalFormat("#.###").format((double)newData[0].get("rad"))+" uSv "+
+                          "- at "+new Date((long)newData[0].get("timeOfReading"));
+        System.out.println("Event received: "+ newData[0].getUnderlying());
+        
+        
+        //Send Events to GUI
+        screen.newWarning(inEvents);
+    }
+}
+
+class TemperatureRadiationWarningListener implements UpdateListener{
+    WarningScreen screen;
+    LinkedList<String> inEvents;
+    
+    public void setScreen(WarningScreen screen){
+        this.screen = screen;
+    }
+    
+    @Override
+    public void update(EventBean[] newData, EventBean[] oldData) {
+        inEvents = new LinkedList<>();
+        
+        System.out.println("Number of news TpWarning "+newData.length);
+        
+        inEvents.add("WARNING: High Temperature: "+(int)newData[0].get("temp")+" º C "+
+                          " followed by High Radiation: "+new DecimalFormat("#.###").format((double)newData[0].get("rad"))+" uSv "+
+                          "- at "+new Date((long)newData[0].get("timeOfReading"));
+        System.out.println("Event received: "+ newData[0].getUnderlying());
         
         
         //Send Events to GUI
@@ -197,7 +423,7 @@ class RadiationWarningListener implements UpdateListener{
 public class CEPHandler {
     
     EventLogScreen logScreen;
-    WarningScreen warningScreen
+    WarningScreen warningScreen;
     
     RadiationWindowListener rwListener;
     RadiationBatchListener rbListener;
