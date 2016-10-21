@@ -184,30 +184,36 @@ public class CEPHandler {
      * Get the Events by Window
      */
     public void getByWindowNoFilter(){
+        //Destroy the other log Statments
+        if(batch5RadiationStatement != null && batch5RadiationStatement.isDestroyed()==false)
+            batch5RadiationStatement.destroy();
+        if(last5RadiationStatement != null && last5RadiationStatement.isDestroyed()==false)
+            last5RadiationStatement.destroy();
+        
         //EPLStatement and Listener registration
         last5RadiationStatement = epAdm.createEPL(EPLQueries.getLast5Radiation());
-        
-        //Deactivate the batch listener
-        if(batch5RadiationStatement != null)
-            batch5RadiationStatement.removeAllListeners();
-        
-        //Activate the window listener
-        last5RadiationStatement.addListener(rwListener);
+        last5RadiationStatement.addListener(rwListener);        
     }
     
     public void getByWindowFilter(String filter){
+        //Destroy the other log Statments
+        if(batch5RadiationStatement != null && batch5RadiationStatement.isDestroyed()==false)
+            batch5RadiationStatement.destroy();
+        if(last5RadiationStatement != null && last5RadiationStatement.isDestroyed()==false)
+            last5RadiationStatement.destroy();
+        
         //EPLStatement and Listener registration
         last5RadiationStatement = epAdm.createEPL(EPLQueries.getLast5RadiationFilter(filter));
-        
-        //Deactivate the batch listener
-        if(batch5RadiationStatement != null)
-            batch5RadiationStatement.removeAllListeners();
-        
-        //Activate the window listener
         last5RadiationStatement.addListener(rwListener);
     }
     
     public void getByWindowWhere(String where){
+        //Destroy the other log Statments
+        if(batch5RadiationStatement != null && batch5RadiationStatement.isDestroyed()==false)
+            batch5RadiationStatement.destroy();
+        if(last5RadiationStatement != null && last5RadiationStatement.isDestroyed()==false)
+            last5RadiationStatement.destroy();
+        
         //EPLStatement and Listener registration
         last5RadiationStatement = epAdm.createEPL(EPLQueries.getLast5RadiationWhere(where));
         
@@ -216,6 +222,7 @@ public class CEPHandler {
             batch5RadiationStatement.removeAllListeners();
         
         //Activate the window listener
+        last5RadiationStatement.removeAllListeners();
         last5RadiationStatement.addListener(rwListener);
     }
     
@@ -223,38 +230,38 @@ public class CEPHandler {
      * Get the Events by Batch
      */
     public void getByBatchNoFilter(){
+        //Destroy the other log Statments
+        if(batch5RadiationStatement != null && batch5RadiationStatement.isDestroyed()==false)
+            batch5RadiationStatement.destroy();
+        if(last5RadiationStatement != null && last5RadiationStatement.isDestroyed()==false)
+            last5RadiationStatement.destroy();
+        
         //EPLStatement and Listener registration
         batch5RadiationStatement = epAdm.createEPL(EPLQueries.getBatch5Radiation());
-        
-        //Deactivate the batch listener
-        if(last5RadiationStatement != null)
-            last5RadiationStatement.removeAllListeners();
-        
-        //Activate the window listener
         batch5RadiationStatement.addListener(rwListener);    
     }
     
     public void getByBatchFilter(String filter){
+        //Destroy the other log Statments
+        if(batch5RadiationStatement != null && batch5RadiationStatement.isDestroyed()==false)
+            batch5RadiationStatement.destroy();
+        if(last5RadiationStatement != null && last5RadiationStatement.isDestroyed()==false)
+            last5RadiationStatement.destroy();
+        
         //EPLStatement and Listener registration
         batch5RadiationStatement = epAdm.createEPL(EPLQueries.getBatch5RadiationFilter(filter));
-        
-        //Deactivate the batch listener
-        if(last5RadiationStatement != null)
-            last5RadiationStatement.removeAllListeners();
-        
-        //Activate the window listener
         batch5RadiationStatement.addListener(rwListener);    
     }
     
     public void getByBatchWhere(String where){
+        //Destroy the other log Statments
+        if(batch5RadiationStatement != null && batch5RadiationStatement.isDestroyed()==false)
+            batch5RadiationStatement.destroy();
+        if(last5RadiationStatement != null && last5RadiationStatement.isDestroyed()==false)
+            last5RadiationStatement.destroy();
+        
         //EPLStatement and Listener registration
         batch5RadiationStatement = epAdm.createEPL(EPLQueries.getBatch5RadiationWhere(where));
-        
-        //Deactivate the batch listener
-        if(last5RadiationStatement != null)
-            last5RadiationStatement.removeAllListeners();
-        
-        //Activate the window listener
         batch5RadiationStatement.addListener(rwListener);    
     }    
     
